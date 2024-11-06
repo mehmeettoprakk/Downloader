@@ -1,68 +1,53 @@
+import javax.swing.*;
 import java.io.BufferedInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.net.URLConnection;
+import java.nio.file.Paths;
 
-interface DownloadListener {
-    void onProgressUpdate(int progress);
-    void onDownloadComplete(String destination);
-    void onDownloadError(String errorMessage);
-}
+public class DownloadTask extends Thread {
+    private String fileUrl;
+    private JProgressBar progressBar;
 
-class DownloadTask implements Runnable {
-    private final String url;
-    private final String destination;
-    private final DownloadListener listener;
-
-    public DownloadTask(String url, String destination, DownloadListener listener) {
-        this.url = url;
-        this.destination = destination;
-        this.listener = listener;
+    public DownloadTask(String fileUrl, JProgressBar progressBar) {
+        this.fileUrl = fileUrl;
+        this.progressBar = progressBar;
     }
 
     @Override
     public void run() {
-        try (BufferedInputStream in = new BufferedInputStream(new URL(url).openStream());
-             FileOutputStream fileOutputStream = new FileOutputStream(destination)) {
-            
-            byte[] dataBuffer = new byte[1024];
-            int bytesRead;
-            int totalBytesRead = 0;
-            int fileSize = new URL(url).openConnection().getContentLength();
+        try {
+            URL url = new URL(fileUrl);
+            URLConnection connection = url.openConnection();
+            int fileSize = connection.getContentLength();  // Dosya boyutunu al
 
-            while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
-                totalBytesRead += bytesRead;
-                fileOutputStream.write(dataBuffer, 0, bytesRead);
-
-                // İlerleme yüzdesini hesapla
-                int progress = (int) ((totalBytesRead * 100.0) / fileSize);
-                listener.onProgressUpdate(progress);
+            if (fileSize <= 0) {
+                System.out.println("Dosya boyutu alınamadı: " + fileUrl);
+                return;
             }
 
-            listener.onDownloadComplete(destination);
+            progressBar.setMaximum(fileSize);  // İlerleme çubuğunun maksimum değerini ayarla
+
+            try (BufferedInputStream in = new BufferedInputStream(connection.getInputStream());
+                 FileOutputStream fileOutputStream = new FileOutputStream(
+                         System.getProperty("user.home") + "/Downloads/" + Paths.get(url.getPath()).getFileName())) {
+
+                byte[] dataBuffer = new byte[1024];
+                int bytesRead;
+                int totalBytesRead = 0;
+
+                while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
+                    fileOutputStream.write(dataBuffer, 0, bytesRead);
+                    totalBytesRead += bytesRead;
+                    progressBar.setValue(totalBytesRead);  // İlerleme çubuğunu güncelle
+                }
+                System.out.println("Download completed: " + fileUrl);
+            }
+
         } catch (IOException e) {
-            listener.onDownloadError(e.getMessage());
+            System.out.println("Error downloading file: " + fileUrl);
+            e.printStackTrace();
         }
-    }
-}
-
-class DownloadManager {
-    private final ExecutorService executorService;
-
-    public DownloadManager(int threadPoolSize) {
-        // Thread havuzunu başlatıyoruz
-        this.executorService = Executors.newFixedThreadPool(threadPoolSize);
-    }
-
-    public void downloadFile(String url, String destination, DownloadListener listener) {
-        // Her indirme işlemi için ayrı bir iş parçacığı oluşturuluyor
-        DownloadTask downloadTask = new DownloadTask(url, destination, listener);
-        executorService.execute(downloadTask);
-    }
-
-    public void shutdown() {
-        executorService.shutdown(); // İş parçacıkları havuzunu kapatıyoruz
     }
 }
