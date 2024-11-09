@@ -10,95 +10,53 @@ package downloadmanager;
  * @author mehme
  */
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 public class DownloadManager extends JFrame {
-    private final JPanel linkPanel;
-    private final JButton addButton;
-    private final JButton downloadButton;
+    private JPanel linkPanel;
+    private JButton addButton;
+    private JButton downloadButton;
     private ArrayList<JTextField> linkFields;
     private ArrayList<JProgressBar> progressBars;
+    private ArrayList<DownloadTask> downloadTasks;
 
     public DownloadManager() {
         setTitle("File Download Manager");
-        setSize(600, 500);
+        setSize(800, 500);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
+        getContentPane().setBackground(new Color(210, 220, 240));  // Açık mavi arka plan rengi
 
-        // Başlık Paneli
         JPanel titlePanel = new JPanel();
+        titlePanel.setBackground(new Color(180, 200, 230));  // Başlık paneli için daha açık bir mavi
         JLabel titleLabel = new JLabel("Dosya İndirme Yöneticisi");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 28));
+        titleLabel.setForeground(new Color(50, 50, 50)); // Daha koyu gri tonlu yazı rengi
         titlePanel.add(titleLabel);
         add(titlePanel, BorderLayout.NORTH);
 
-        // Açıklama Metni
-        JPanel descriptionPanel = new JPanel();
-        JLabel descriptionLabel = new JLabel("İndirmek istediğiniz dosya bağlantılarını girin ve 'Link Ekle' ile yeni bağlantılar ekleyin.");
-        descriptionLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-        descriptionPanel.add(descriptionLabel);
-        add(descriptionPanel, BorderLayout.NORTH);
-
-        // Linklerin ve İlerleme Çubuklarının Paneli
         linkPanel = new JPanel();
         linkPanel.setLayout(new BoxLayout(linkPanel, BoxLayout.Y_AXIS));
-        linkPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        linkPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        linkPanel.setBackground(new Color(230, 240, 255)); // Link paneli için çok açık mavi
 
         addButton = new JButton("Yeni Link Ekle");
+        styleButton(addButton, new Color(100, 180, 200));
+        
         downloadButton = new JButton("İndirmeyi Başlat");
-
-        addButton.setFont(new Font("Arial", Font.PLAIN, 16));
-        downloadButton.setFont(new Font("Arial", Font.PLAIN, 16));
+        styleButton(downloadButton, new Color(120, 150, 220));
 
         linkFields = new ArrayList<>();
         progressBars = new ArrayList<>();
+        downloadTasks = new ArrayList<>();
 
-        // Link Ekle Butonu Aksiyonu
-        addButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JPanel singleLinkPanel = new JPanel(new BorderLayout(5, 5));
-                JTextField newLinkField = new JTextField(30);
-                JLabel linkLabel = new JLabel("Dosya URL: ");
-                linkLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        addButton.addActionListener(e -> addDownloadLink());
+        downloadButton.addActionListener(e -> startDownloads());
 
-                JProgressBar newProgressBar = new JProgressBar();
-                newProgressBar.setStringPainted(true);
-
-                linkFields.add(newLinkField);
-                progressBars.add(newProgressBar);
-
-                singleLinkPanel.add(linkLabel, BorderLayout.WEST);
-                singleLinkPanel.add(newLinkField, BorderLayout.CENTER);
-                singleLinkPanel.add(newProgressBar, BorderLayout.SOUTH);
-
-                linkPanel.add(singleLinkPanel);
-                linkPanel.revalidate();
-                linkPanel.repaint();
-            }
-        });
-
-        // İndirmeyi Başlat Butonu Aksiyonu
-        downloadButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                for (int i = 0; i < linkFields.size(); i++) {
-                    String url = linkFields.get(i).getText();
-                    if (!url.isEmpty()) {
-                        JProgressBar progressBar = progressBars.get(i);
-                        DownloadTask downloadTask = new DownloadTask(url, progressBar);
-                        downloadTask.start();  // Her indirme için yeni bir thread başlat
-                    }
-                }
-            }
-        });
-
-        // Buton Paneli
         JPanel buttonPanel = new JPanel();
-        buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        buttonPanel.setBackground(new Color(230, 240, 255));
         buttonPanel.add(addButton);
         buttonPanel.add(downloadButton);
 
@@ -106,13 +64,87 @@ public class DownloadManager extends JFrame {
         add(buttonPanel, BorderLayout.SOUTH);
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new DownloadManager().setVisible(true);
+    private void styleButton(JButton button, Color color) {
+        button.setBackground(color);
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setFont(new Font("Arial", Font.BOLD, 14));
+    }
+
+    private void addDownloadLink() {
+        JPanel singleLinkPanel = new JPanel(new BorderLayout(5, 5));
+        singleLinkPanel.setBackground(new Color(230, 240, 255));
+        
+        JTextField newLinkField = new JTextField(30);
+        JProgressBar newProgressBar = new JProgressBar();
+        newProgressBar.setStringPainted(true);
+
+        JButton pauseButton = new JButton("Durdur");
+        JButton resumeButton = new JButton("Devam");
+        JButton cancelButton = new JButton("İptal");
+
+        styleButton(pauseButton, new Color(220, 100, 100));
+        styleButton(resumeButton, new Color(255, 210, 100));
+        styleButton(cancelButton, new Color(150, 100, 180));
+
+        linkFields.add(newLinkField);
+        progressBars.add(newProgressBar);
+
+        singleLinkPanel.add(new JLabel("Dosya URL: "), BorderLayout.WEST);
+        singleLinkPanel.add(newLinkField, BorderLayout.CENTER);
+        singleLinkPanel.add(newProgressBar, BorderLayout.SOUTH);
+
+        JPanel actionButtonPanel = new JPanel(new FlowLayout());
+        actionButtonPanel.setBackground(new Color(230, 240, 255));
+        actionButtonPanel.add(pauseButton);
+        actionButtonPanel.add(resumeButton);
+        actionButtonPanel.add(cancelButton);
+        singleLinkPanel.add(actionButtonPanel, BorderLayout.EAST);
+
+        linkPanel.add(singleLinkPanel);
+        linkPanel.revalidate();
+        linkPanel.repaint();
+
+        pauseButton.addActionListener(e -> pauseDownload(linkFields.size() - 1));
+        resumeButton.addActionListener(e -> resumeDownload(linkFields.size() - 1));
+        cancelButton.addActionListener(e -> cancelDownload(linkFields.size() - 1));
+    }
+
+    private void startDownloads() {
+        for (int i = 0; i < linkFields.size(); i++) {
+            String url = linkFields.get(i).getText();
+            if (!url.isEmpty()) {
+                JProgressBar progressBar = progressBars.get(i);
+                DownloadTask downloadTask = new DownloadTask(url, progressBar);
+                downloadTasks.add(downloadTask);
+                downloadTask.start();
             }
-        });
+        }
+    }
+
+    private void pauseDownload(int index) {
+        if (index >= 0 && index < downloadTasks.size()) {
+            downloadTasks.get(index).pauseDownload();
+        }
+    }
+
+    private void resumeDownload(int index) {
+        if (index >= 0 && index < downloadTasks.size()) {
+            downloadTasks.get(index).resumeDownload();
+        }
+    }
+
+    private void cancelDownload(int index) {
+        if (index >= 0 && index < downloadTasks.size()) {
+            downloadTasks.get(index).cancelDownload();
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new DownloadManager().setVisible(true));
     }
 }
+
+
+
 
