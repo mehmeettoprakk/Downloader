@@ -18,7 +18,7 @@ public class DownloadTask extends Thread {
     private JPanel linkPanel;
     private volatile boolean isPaused = false;
     private volatile boolean isCancelled = false;
-    private File downloadedFile; // İndirilen dosyayı temsil eder
+    private File downloadedFile; 
 
     public DownloadTask(String fileUrl, JProgressBar progressBar, JLabel speedLabel, JLabel fileNameLabel, JLabel sizeLabel, JLabel timeLeftLabel, JPanel parentPanel, JPanel linkPanel) {
         this.fileUrl = fileUrl;
@@ -90,7 +90,7 @@ public class DownloadTask extends Thread {
                 totalBytesRead.addAndGet(bytesRead);
                 progressBar.setValue(totalBytesRead.get());
 
-                // Hız ve kalan süre güncellemesi
+                
                 long currentTime = System.currentTimeMillis();
                 if (currentTime - lastUpdateTime >= 1000) {
                     long bytesInLastInterval = totalBytesRead.get() - previousBytesRead;
@@ -110,11 +110,11 @@ public class DownloadTask extends Thread {
             }
 
             if (isCancelled) {
-                // Akışları kapat ve dosyayı sil
+                
                 closeStreams(fileOutputStream, in);
                 deleteFile();
 
-                // Paneli arayüzden kaldır
+                
                 SwingUtilities.invokeLater(() -> {
                     linkPanel.remove(parentPanel);
                     linkPanel.revalidate();

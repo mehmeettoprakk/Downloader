@@ -12,10 +12,10 @@ public class DownloadManager extends JFrame {
     private JButton downloadButton;
     private ArrayList<JTextField> linkFields;
     private ArrayList<JProgressBar> progressBars;
-    private ArrayList<JLabel> fileLabels; // Dosya adı için yeni liste
-    private ArrayList<JLabel> sizeLabels; // Boyut bilgisi için yeni liste
-    private ArrayList<JLabel> timeLabels; // Kalan süre için yeni liste
-    private ArrayList<JLabel> speedLabels; // Hız bilgisi için yeni liste
+    private ArrayList<JLabel> fileLabels; 
+    private ArrayList<JLabel> sizeLabels; 
+    private ArrayList<JLabel> timeLabels; 
+    private ArrayList<JLabel> speedLabels; 
     private ArrayList<DownloadTask> downloadTasks;
 
     public DownloadManager() {
@@ -128,6 +128,7 @@ public class DownloadManager extends JFrame {
     }
 
     private void startDownloads() {
+        
         for (int i = 0; i < linkFields.size(); i++) {
             String url = linkFields.get(i).getText();
             if (!url.isEmpty()) {
@@ -136,21 +137,28 @@ public class DownloadManager extends JFrame {
                 JLabel sizeLabel = sizeLabels.get(i);
                 JLabel timeLabel = timeLabels.get(i);
                 JLabel speedLabel = speedLabels.get(i);
-
+    
+                
                 JPanel parentPanel = (JPanel) linkPanel.getComponent(i);
-
+    
+               
                 DownloadTask downloadTask = new DownloadTask(url, progressBar, speedLabel, fileLabel, sizeLabel, timeLabel, parentPanel, linkPanel);
-
+    
+                
                 if (i < downloadTasks.size()) {
                     downloadTasks.set(i, downloadTask);
                 } else {
                     downloadTasks.add(downloadTask);
                 }
-
-                downloadTask.start();
+    
+                
+                Thread downloadThread = new Thread(downloadTask);
+                downloadThread.start();
             }
         }
     }
+    
+    
 
     private void updateButtonListeners() {
         for (int i = 0; i < downloadTasks.size(); i++) {
