@@ -1,27 +1,28 @@
 package downloadmanager;
 
-
+// Gerekli Swing kütüphaneleri ve diğer yardımcı araçlar
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.ArrayList;
 
+// Dosya İndirme Yöneticisi, JFrame kullanılarak arayüz oluşturulur
 public class DownloadManager extends JFrame {
     private JPanel linkPanel;
     private JButton addButton;
     private JButton downloadButton;
-    private ArrayList<JTextField> linkFields;
+    private ArrayList<JTextField> linkFields; // Kullanıcı tarafından girilen bağlantıları tutar
     private ArrayList<JProgressBar> progressBars;
-    private ArrayList<JLabel> fileLabels; 
-    private ArrayList<JLabel> sizeLabels; 
-    private ArrayList<JLabel> timeLabels; 
-    private ArrayList<JLabel> speedLabels; 
-    private ArrayList<DownloadTask> downloadTasks;
-
+    private ArrayList<JLabel> fileLabels; // Her dosyanın adını göstermek için etiketler
+    private ArrayList<JLabel> sizeLabels; // İndirilen boyut bilgilerini göstermek için etiketler
+    private ArrayList<JLabel> timeLabels; // Kalan süreyi göstermek için etiketler
+    private ArrayList<JLabel> speedLabels; // İndirme hızını göstermek için etiketler
+    private ArrayList<DownloadTask> downloadTasks; // Her indirme için bir görev listesi
+// Arayüz elemanlarının oluşturulması ve yapılandırılması
     public DownloadManager() {
         setTitle("File Download Manager");
         setSize(800, 500);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); //Uygulama kapandığında program sonlanır
         setLayout(new BorderLayout());
         getContentPane().setBackground(new Color(210, 220, 240));
 
@@ -52,6 +53,7 @@ public class DownloadManager extends JFrame {
         speedLabels = new ArrayList<>();
         downloadTasks = new ArrayList<>();
 
+     // Butonlara tıklama olayları ekleme
         addButton.addActionListener(e -> addDownloadLink());
         downloadButton.addActionListener(e -> startDownloads());
 
@@ -70,7 +72,7 @@ public class DownloadManager extends JFrame {
         button.setFocusPainted(false);
         button.setFont(new Font("Arial", Font.BOLD, 14));
     }
-
+    // Yeni bir indirme bağlantısı ekleme
     private void addDownloadLink() {
         JPanel singleLinkPanel = new JPanel();
         singleLinkPanel.setLayout(new BoxLayout(singleLinkPanel, BoxLayout.Y_AXIS));
@@ -99,7 +101,7 @@ public class DownloadManager extends JFrame {
         styleButton(resumeButton, new Color(255, 210, 100));
         styleButton(cancelButton, new Color(150, 100, 180));
 
-        int index = linkFields.size();
+        int index = linkFields.size(); // Yeni bağlantının indeksini belirleme
 
         linkFields.add(newLinkField);
         progressBars.add(newProgressBar);
@@ -118,15 +120,16 @@ public class DownloadManager extends JFrame {
         actionButtonPanel.add(cancelButton);
         singleLinkPanel.add(actionButtonPanel);
 
-        linkPanel.add(singleLinkPanel);
-        linkPanel.revalidate();
-        linkPanel.repaint();
+        linkPanel.add(singleLinkPanel); //// Yeni paneli ana bağlantı paneline
+        linkPanel.revalidate(); // Bileşenin geçerli olduğunu belirtme ve bileşenin boyutunu güncelleme
+        linkPanel.repaint(); //Bileşenin görsel olarak yeniden çizilmesini sağlama.
 
         pauseButton.addActionListener(e -> pauseDownload(index));
         resumeButton.addActionListener(e -> resumeDownload(index));
         cancelButton.addActionListener(e -> cancelDownload(index, singleLinkPanel));
     }
 
+    // İndirme işlemini başlatma
     private void startDownloads() {
         
         for (int i = 0; i < linkFields.size(); i++) {
@@ -141,7 +144,7 @@ public class DownloadManager extends JFrame {
                 
                 JPanel parentPanel = (JPanel) linkPanel.getComponent(i);
     
-               
+                // Yeni indirme görevi oluşturma
                 DownloadTask downloadTask = new DownloadTask(url, progressBar, speedLabel, fileLabel, sizeLabel, timeLabel, parentPanel, linkPanel);
     
                 
@@ -151,7 +154,7 @@ public class DownloadManager extends JFrame {
                     downloadTasks.add(downloadTask);
                 }
     
-                
+                // İndirme işlemi bir iş parçacığında başlatılır.
                 Thread downloadThread = new Thread(downloadTask);
                 downloadThread.start();
             }

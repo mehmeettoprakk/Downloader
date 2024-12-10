@@ -14,12 +14,13 @@ public class DownloadTask extends Thread {
     private JLabel fileNameLabel;
     private JLabel sizeLabel;
     private JLabel timeLeftLabel;
-    private JPanel parentPanel;
-    private JPanel linkPanel;
+    private JPanel parentPanel; // İlgili indirme bağlantısının kullanıcı arayüzü paneli
+    private JPanel linkPanel; // Tüm indirme bağlantılarını içeren ana panel
     private volatile boolean isPaused = false;
     private volatile boolean isCancelled = false;
     private File downloadedFile; 
 
+    //Gerekli bileşenleri ve indirme bilgilerini alma
     public DownloadTask(String fileUrl, JProgressBar progressBar, JLabel speedLabel, JLabel fileNameLabel, JLabel sizeLabel, JLabel timeLeftLabel, JPanel parentPanel, JPanel linkPanel) {
         this.fileUrl = fileUrl;
         this.progressBar = progressBar;
@@ -56,6 +57,7 @@ public class DownloadTask extends Thread {
             String fileName = Paths.get(url.getPath()).getFileName().toString();
             downloadedFile = new File(System.getProperty("user.home") + "/Downloads/" + fileName);
 
+            // Dosya okuma ve yazma için akışlar oluşturma
             in = new BufferedInputStream(url.openStream());
             fileOutputStream = new FileOutputStream(downloadedFile);
 
@@ -67,6 +69,7 @@ public class DownloadTask extends Thread {
             long previousBytesRead = 0;
             int fileSize = url.openConnection().getContentLength();
 
+            // Kullanıcı arayüzü etiketlerini güncelleme
             SwingUtilities.invokeLater(() -> {
                 fileNameLabel.setText("Dosya: " + fileName);
                 sizeLabel.setText("Boyut: 0 MB / " + df.format((double) fileSize / 1024 / 1024) + " MB");
@@ -135,6 +138,7 @@ public class DownloadTask extends Thread {
         }
     }
 
+    // Akışları güvenli bir şekilde kapatma
     private void closeStreams(FileOutputStream fileOutputStream, BufferedInputStream in) {
         try {
             if (fileOutputStream != null) fileOutputStream.close();
@@ -144,6 +148,7 @@ public class DownloadTask extends Thread {
         }
     }
 
+    // İndirme iptal edildiğinde dosyayı silme
     public void deleteFile() {
         try {
             URL url = new URL(fileUrl);
