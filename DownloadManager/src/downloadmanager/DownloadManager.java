@@ -3,7 +3,7 @@ package downloadmanager;
 // Gerekli Swing kütüphaneleri ve diğer yardımcı araçlar
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import java.awt.*;
+import java.awt.*; 
 import java.util.ArrayList;
 
 // Dosya İndirme Yöneticisi, JFrame kullanılarak arayüz oluşturulur
@@ -26,6 +26,7 @@ public class DownloadManager extends JFrame {
         setLayout(new BorderLayout());
         getContentPane().setBackground(new Color(210, 220, 240));
 
+        
         JPanel titlePanel = new JPanel();
         titlePanel.setBackground(new Color(180, 200, 230));
         JLabel titleLabel = new JLabel("Dosya İndirme Yöneticisi");
@@ -45,13 +46,13 @@ public class DownloadManager extends JFrame {
         downloadButton = new JButton("İndirmeyi Başlat");
         styleButton(downloadButton, new Color(120, 150, 220));
 
-        linkFields = new ArrayList<>();
-        progressBars = new ArrayList<>();
-        fileLabels = new ArrayList<>();
-        sizeLabels = new ArrayList<>();
+        linkFields = new ArrayList<>(); 
+        progressBars = new ArrayList<>(); 
+        fileLabels = new ArrayList<>(); // Her dosyanın adını göstermek için etiketler
+        sizeLabels = new ArrayList<>(); 
         timeLabels = new ArrayList<>();
         speedLabels = new ArrayList<>();
-        downloadTasks = new ArrayList<>();
+        downloadTasks = new ArrayList<>(); // Her indirme için bir görev listesi
 
      // Butonlara tıklama olayları ekleme
         addButton.addActionListener(e -> addDownloadLink());
@@ -120,7 +121,7 @@ public class DownloadManager extends JFrame {
         actionButtonPanel.add(cancelButton);
         singleLinkPanel.add(actionButtonPanel);
 
-        linkPanel.add(singleLinkPanel); //// Yeni paneli ana bağlantı paneline
+        linkPanel.add(singleLinkPanel); // Ana panelde yeni bağlantı panelini ekleme
         linkPanel.revalidate(); // Bileşenin geçerli olduğunu belirtme ve bileşenin boyutunu güncelleme
         linkPanel.repaint(); //Bileşenin görsel olarak yeniden çizilmesini sağlama.
 
@@ -131,7 +132,7 @@ public class DownloadManager extends JFrame {
 
     // İndirme işlemini başlatma
     private void startDownloads() {
-        
+        // Tüm indirme bağlantılarını dolaşma
         for (int i = 0; i < linkFields.size(); i++) {
             String url = linkFields.get(i).getText();
             if (!url.isEmpty()) {
@@ -142,12 +143,12 @@ public class DownloadManager extends JFrame {
                 JLabel speedLabel = speedLabels.get(i);
     
                 
-                JPanel parentPanel = (JPanel) linkPanel.getComponent(i);
+                JPanel parentPanel = (JPanel) linkPanel.getComponent(i); // İndirme bağlantılarını içeren ana panel
     
                 // Yeni indirme görevi oluşturma
                 DownloadTask downloadTask = new DownloadTask(url, progressBar, speedLabel, fileLabel, sizeLabel, timeLabel, parentPanel, linkPanel);
     
-                
+                // İndirme görevini listeye ekleme
                 if (i < downloadTasks.size()) {
                     downloadTasks.set(i, downloadTask);
                 } else {
@@ -168,6 +169,7 @@ public class DownloadManager extends JFrame {
             int currentIndex = i;
             DownloadTask task = downloadTasks.get(i);
 
+            
             JPanel parentPanel = (JPanel) linkPanel.getComponent(i);
             JButton pauseButton = (JButton) ((JPanel) parentPanel.getComponent(parentPanel.getComponentCount() - 1)).getComponent(0);
             JButton resumeButton = (JButton) ((JPanel) parentPanel.getComponent(parentPanel.getComponentCount() - 1)).getComponent(1);
@@ -197,6 +199,7 @@ public class DownloadManager extends JFrame {
             task.cancelDownload();
             task.deleteFile();
 
+            // İndirme bağlantısını ve ilgili bileşenleri kaldırma
             downloadTasks.remove(index);
             linkFields.remove(index);
             progressBars.remove(index);
@@ -205,15 +208,16 @@ public class DownloadManager extends JFrame {
             timeLabels.remove(index);
             speedLabels.remove(index);
 
-            linkPanel.remove(singleLinkPanel);
-            linkPanel.revalidate();
-            linkPanel.repaint();
+            linkPanel.remove(singleLinkPanel); // İlgili indirme bağlantısını ana panelden kaldırma
+            linkPanel.revalidate(); // Bileşenin geçerli olduğunu belirtme ve bileşenin boyutunu güncelleme
+            linkPanel.repaint(); //Bileşenin görsel olarak yeniden çizilmesini sağlama.
 
             updateButtonListeners();
         }
     }
 
     public static void main(String[] args) {
+        // Uygulama başlatma
         SwingUtilities.invokeLater(() -> new DownloadManager().setVisible(true));
     }
 }

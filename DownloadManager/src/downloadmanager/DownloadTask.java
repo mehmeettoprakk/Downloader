@@ -1,11 +1,11 @@
 package downloadmanager;
 
-import javax.swing.*;
-import java.io.*;
-import java.net.URL;
-import java.nio.file.Paths;
-import java.text.DecimalFormat;
-import java.util.concurrent.atomic.AtomicInteger;
+import javax.swing.*; // Swing bileşenlerini içerir
+import java.io.*; // Dosya okuma ve yazma işlemleri için gerekli sınıfları içerir
+import java.net.URL; 
+import java.nio.file.Paths; 
+import java.text.DecimalFormat; 
+import java.util.concurrent.atomic.AtomicInteger; // İş parçası güvenliği için kullanılır
 
 public class DownloadTask extends Thread {
     private String fileUrl;
@@ -36,10 +36,11 @@ public class DownloadTask extends Thread {
         isPaused = true;
     }
 
+    
     public void resumeDownload() {
         isPaused = false;
         synchronized (this) {
-            notify();
+            notify();// İş parçacığını uyandırma
         }
     }
 
@@ -61,6 +62,7 @@ public class DownloadTask extends Thread {
             in = new BufferedInputStream(url.openStream());
             fileOutputStream = new FileOutputStream(downloadedFile);
 
+            
             byte[] dataBuffer = new byte[1024];
             AtomicInteger totalBytesRead = new AtomicInteger(0);
             DecimalFormat df = new DecimalFormat("#.##");
@@ -102,6 +104,7 @@ public class DownloadTask extends Thread {
                     double speed = (bytesInLastInterval / 1024.0); // KB/s
                     long timeLeft = (long) ((fileSize - totalBytesRead.get()) / (speed * 1024)); // saniye
 
+                    // Kullanıcı arayüzü etiketlerini güncelleme
                     SwingUtilities.invokeLater(() -> {
                         speedLabel.setText("Hız: " + df.format(speed) + " KB/s");
                         sizeLabel.setText("Boyut: " + df.format((double) totalBytesRead.get() / 1024 / 1024) + " MB / " + df.format((double) fileSize / 1024 / 1024) + " MB");
@@ -119,9 +122,9 @@ public class DownloadTask extends Thread {
 
                 
                 SwingUtilities.invokeLater(() -> {
-                    linkPanel.remove(parentPanel);
-                    linkPanel.revalidate();
-                    linkPanel.repaint();
+                    linkPanel.remove(parentPanel); // İptal edilen indirme bağlantısını arayüzden kaldırma
+                    linkPanel.revalidate(); // Bileşenin geçerli olduğunu belirtme ve bileşenin boyutunu güncelleme
+                    linkPanel.repaint(); //Bileşenin görsel olarak yeniden çizilmesini sağlama.
                 });
             } else {
                 SwingUtilities.invokeLater(() -> {
