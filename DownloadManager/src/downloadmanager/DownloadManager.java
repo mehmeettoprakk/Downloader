@@ -80,7 +80,7 @@ public class DownloadManager extends JFrame {
         singleLinkPanel.setBackground(new Color(230, 240, 255));
         singleLinkPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        JTextField newLinkField = new JTextField(30);
+        JTextField newLinkField = new JTextField(30); 
         JProgressBar newProgressBar = new JProgressBar();
         newProgressBar.setStringPainted(true);
 

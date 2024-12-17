@@ -50,8 +50,8 @@ public class DownloadTask extends Thread {
 
     @Override
     public void run() {
-        BufferedInputStream in = null;
-        FileOutputStream fileOutputStream = null;
+        BufferedInputStream in = null;// Veri okuma işlemleri için akış oluşturma
+        FileOutputStream fileOutputStream = null; // Veri yazma işlemleri için akış oluşturma
 
         try {
             URL url = new URL(fileUrl);
@@ -67,7 +67,7 @@ public class DownloadTask extends Thread {
             AtomicInteger totalBytesRead = new AtomicInteger(0);
             DecimalFormat df = new DecimalFormat("#.##");
 
-            long lastUpdateTime = System.currentTimeMillis();
+            long lastUpdateTime = System.currentTimeMillis(); // İndirme hızı ve kalan süreyi güncellemek için son zaman değişkeni
             long previousBytesRead = 0;
             int fileSize = url.openConnection().getContentLength();
 
